@@ -162,118 +162,42 @@ set.seed(1234)
 
 summary(ratings)
 
-# average rating for a movie
-movie_rating <- ratings %>%
-  inner_join(movies, by = "MovieID") %>%
-  na.omit() %>%
-  select(MovieID, MovieTitle, rating, Year) %>%
-  group_by(MovieID, MovieTitle, Year) %>%
-  summarise(count = n(), mean = mean(rating)) %>%
-  ungroup() %>%
-  arrange(desc(mean))
 
-
-knitr::kable(head(movie_rating, 10))
-write.csv(avg_rating, file = "movie_rating.csv") 
-
-
-
-# Effect of occupation On Ratings
-occupation_ratings <- ratings %>%
-  inner_join(users, by = "userId") %>%
-  na.omit() %>%
-  select(userId, Gender, Occupation, MovieID, rating) %>%
-  group_by(Occupation) %>%
-  summarise(count = n(), mean = mean(rating)) %>%
-  ungroup() %>%
-  arrange(order(count))
-
-knitr::kable(head(occupation_ratings, 10))
-
-write.csv(occupation_ratings, file = "occupation_ratings.csv")
-
-# Plot Effect of occupation On Ratings
-ggplot(occupation_ratings,aes(x=Occupation,y=count,fill=Occupation)) + 
-  geom_bar(stat = "identity") + 
-  coord_flip() + 
-  #axis(side=2, at=seq(0,600,by=100)) +
-  ggtitle("Occupation Demographic Distribution") + 
-  theme(legend.position = "right")
-
-# Effect of Age on ratings
-
-age_ratings <- users %>%
-  inner_join(ratings, by = "userId") %>%
-  na.omit() %>%
-  select(userId, Age, Occupation, MovieID, rating)  %>%
-  group_by(Age) %>%
-  summarise(count = n()) %>%
-  ungroup() %>%
-  arrange(order(Age))
-
-knitr::kable(head(age_ratings, 10))
-
-# Plot age and rating counts
-ggplot(age_ratings,aes(x=Age,y=count,fill=Age)) + 
-  geom_bar(stat = "identity") + 
-  coord_flip() + 
-  # ylim(20000,200000) +
-  ggtitle("Age Distribution") + 
-  theme(legend.position = "none")
-
-
+###########################  This is grouped by Age and Ratings ##########
 
   age_ratings <- ratings %>%
   inner_join(users, by = "userId") %>%
   inner_join(movies, by = "MovieID") %>%
   na.omit() %>%
   select(userId, Age, Occupation, MovieID, MovieTitle, Genres,rating)  %>%
-  group_by(Age,MovieID, movie_rating) %>%
-  summarise(count = n()) %>%
+  group_by(Age,MovieID) %>%
+  summarise(count = n(),mean = mean(rating)) %>%
   #ungroup() %>%
-  arrange(order(Age,MovieTitle)) 
+  arrange(order(MovieID)) 
     
     summary(age_ratings)
     
     knitr::kable(head(age_ratings, 10))
     
-    user_rating_join <- merge(ratings, users, by="userId")
-    user_rating_movies_join <- merge(user_rating_join, movies, by="MovieID") 
+    write.csv(age_ratings, file = "age_ratings.csv")
+    
+    
   
-head(user_rating_movies_join)
-write.csv(user_rating_movies_join, file = "user_rating_movies_join.csv")
-
-age_ratings <- user_rating_movies_join %>%
-   select( Age, MovieID, rating)  %>%
-  group_by(Age,MovieID, rating) %>%
-  summarise(count = n()) %>%
-  #ungroup() %>%
-  arrange(desc(count))
-
-knitr::kable(head(age_ratings, 10))
-
-age_ratings <- user_rating_movies_join %>%
-  select( Age, MovieTitle, Genres, rating, )  %>%
-  group_by(Age,MovieTitle, rating) %>%
-  summarise(count = n()) %>%
-  #ungroup() %>%
-  arrange(desc(count))
-
-knitr::kable(head(age_ratings, 10))
-
-user_item_matrix1 <- as(split(user_rating_movies_join[,"MovieTitle"], user_rating_movies_join[,"Age"]),  "transactions")
-head(user_item_matrix1)
-
-rule_param1= list(
-  supp = 0.1,
-  conf = 0.1,
-  maxlen = 7
-)
-
-# Assocaition Rules using Apriori
-assoc_rules1 = apriori(user_item_matrix1,parameter = rule_param1)
-summary(assoc_rules1)
-rule_param
-summary(user_item_matrix1)
-
-write.csv(assoc_rules, file = "assoc_rules1.csv")
+ ###########################  This is grouped by Oocupation and Ratings ##########
+    
+    occupation_ratings <- ratings %>%
+      inner_join(users, by = "userId") %>%
+      inner_join(movies, by = "MovieID") %>%
+      na.omit() %>%
+      select(userId, Age, Occupation, MovieID, MovieTitle, Genres,rating)  %>%
+      group_by(Occupation,MovieID) %>%
+      summarise(count = n(),mean = mean(rating)) %>%
+      #ungroup() %>%
+      arrange(order(MovieID)) 
+    
+    summary(occupation_ratings)
+    
+    knitr::kable(head(occupation_ratings, 10))
+    
+    write.csv(occupation_ratings, file = "occupation_ratings.csv")
+  
